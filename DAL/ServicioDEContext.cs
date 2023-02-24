@@ -43,7 +43,7 @@ namespace ServicioDE.DAL
             return r;
         }
        
-        public List<T> DataTableToList<T>(this DataTable table) where T : class, new()
+        public List<T> DataTableToList<T>(DataTable table) 
         {
             try
             {
@@ -51,7 +51,7 @@ namespace ServicioDE.DAL
 
                 foreach (var row in table.AsEnumerable())
                 {
-                    T obj = new T();
+                    T obj = (T)Activator.CreateInstance(typeof(T));
 
                     foreach (var prop in obj.GetType().GetProperties())
                     {

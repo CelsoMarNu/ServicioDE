@@ -1,4 +1,5 @@
-﻿using ServicioDE.DAL;
+﻿using Microsoft.EntityFrameworkCore;
+using ServicioDE.DAL;
 using ServicioDE.DTO;
 using ServicioDE.Objetos;
 using ServicioDE.Objetos.ProcesarLote;
@@ -8,6 +9,7 @@ using System.Data;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
+using System.Reflection;
 using System.Reflection.Metadata.Ecma335;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
@@ -368,6 +370,65 @@ namespace ServicioDE.BLL.Services
                 throw;
             }
             return cabecera;
-        }       
+        }
+        DbSet<ParametroEntity> Parametros { get; set; }
+        DbSet<CabeceraEntity> Cabecera { get; set; }
+        DbSet<DetalleEntity> Detalle { get; set; }
+        private string ConectionString;
+
+        public List<DetalleEntity> TraerDetalle(DataTable dtDetalle)
+        {
+            var r = new List<DetalleEntity>();
+            r = DataTableToList<DetalleEntity>(dtDetalle).ToList();
+            return r;
+        }
+
+        public List<CabeceraEntity> TraerCabecera(DataTable dtCabecera)
+        {
+            var r = new List<CabeceraEntity>();
+            r = DataTableToList<CabeceraEntity>(dtCabecera).ToList();
+            return r;
+        }
+
+        public List<ParametroEntity> TraerParametros(DataTable dtParametros)
+        {
+            var r = new List<ParametroEntity>();
+            r = DataTableToList<ParametroEntity>(dtParametros).ToList();
+            return r;
+        }
+
+        public List<T> DataTableToList<T>(this DataTable table) where T : class, new()
+        {
+            try
+            {
+                List<T> list = new List<T>();
+
+                foreach (var row in table.AsEnumerable())
+                {
+                    T obj = new T();
+
+                    foreach (var prop in obj.GetType().GetProperties())
+                    {
+                        try
+                        {
+                            PropertyInfo propertyInfo = obj.GetType().GetProperty(prop.Name);
+                            propertyInfo.SetValue(obj, Convert.ChangeType(row[prop.Name], propertyInfo.PropertyType), null);
+                        }
+                        catch
+                        {
+                            continue;
+                        }
+                    }
+
+                    list.Add(obj);
+                }
+
+                return list;
+            }
+            catch
+            {
+                return null;
+            }
+        }
     }
 }
